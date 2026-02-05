@@ -2,7 +2,7 @@ import streamlit as st
 import qiskit
 import numpy as np
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
-from logic import compute_bell_magic_from_circuit  # Importing your clean backend
+from engine_gemini import compute_bell_magic_from_circuit  # Importing your clean backend
 
 # --- Page Config ---
 st.set_page_config(page_title="Bell Magic Calculator", page_icon="⚛️")
@@ -104,4 +104,5 @@ if st.button("Calculate Bell Magic", type="primary"):
                 c3.metric("Purity", f"{results['purity']:.4f}")
 
             except Exception as e:
+
                 st.error(f"Simulation Error: {str(e)}")
