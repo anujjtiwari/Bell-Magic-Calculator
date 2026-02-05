@@ -1,9 +1,5 @@
-To install these packages just write : pip install {package name} in your terminal or simply use an !pip if you're trying to install it directly in a python notebook (.ipynb file) 
-
-Packages required to run this code: 
-
-1. qiskit_ibm_runtime 
-2. qiskit_aer 
-3. Numpy 
-4. qiskit 
-5. pylatexenc
+streamlit
+qiskit>=1.0.0
+qiskit-aer
+numpy
+matplotlib
