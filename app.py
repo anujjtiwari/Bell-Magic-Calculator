@@ -207,7 +207,7 @@ circuit.measure(qreg_q[1], creg_c[1])
 circuit, error = None, None
 
 with main_col1:
-    st.markdown("### Please paste your Qiskit code here below ↓")
+    st.markdown("### Please paste your Qiskit code below ↓")
     code_input = st.text_area("Python Qiskit Code", value=default_code, height=350, label_visibility="collapsed")
     st.write("")
     
