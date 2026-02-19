@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from engine_gemini import compute_bell_magic_from_circuit  # Importing your clean backend
-from PIL import image 
+
 
 # --- Page Config ---
 from PIL import Image
