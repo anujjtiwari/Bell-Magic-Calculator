@@ -3,6 +3,7 @@ import qiskit as qk
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
 from qiskit.circuit import Measure, Reset
 from qiskit_aer import Aer
+from qiskit_aer.noise import NoiseModel, depolarizing_error  # ADDED: For realistic circuit noise
 
 # ---- Helper Functions ----
 
@@ -128,11 +129,16 @@ def strip_measurements(circuit):
 
     return new_circuit
 
-def bell_magic_circuit_from_state(state_circuit):
+# FIXED: Added 'add_measurement' flag so Exact Mode doesn't collapse the statevector
+def bell_magic_circuit_from_state(state_circuit, add_measurement=True):
     n = state_circuit.num_qubits
-    q = QuantumRegister(2 * n)
-    c = ClassicalRegister(2 * n)
-    qc = QuantumCircuit(q, c)
+    q = QuantumRegister(2 * n, 'q')
+    
+    if add_measurement:
+        c = ClassicalRegister(2 * n, 'c')
+        qc = QuantumCircuit(q, c)
+    else:
+        qc = QuantumCircuit(q)
 
     qc.compose(state_circuit, qubits=range(n), inplace=True)
     qc.compose(state_circuit, qubits=range(n, 2 * n), inplace=True)
@@ -141,8 +147,11 @@ def bell_magic_circuit_from_state(state_circuit):
         qc.cx(i, i + n)
         qc.h(i)
 
-    qc.measure(q, c)
+    if add_measurement:
+        qc.measure(q, c)
+        
     return qc
+
 
 # ---- Main Computation Function (Called by Website) ----
 
@@ -154,11 +163,14 @@ def compute_bell_magic_from_circuit(circuit, depolarization_factor=0.0, n_sample
     # 1. Prepare State
     state_circuit = strip_measurements(circuit)
     n_qubits = state_circuit.num_qubits
-    bell_circuit = bell_magic_circuit_from_state(state_circuit)
 
     # 2. Run Simulation
     if n_samples == 0:
+        # EXACT MODE: Do not append measurements, use save_statevector()
+        bell_circuit = bell_magic_circuit_from_state(state_circuit, add_measurement=False)
         backend = Aer.get_backend("aer_simulator_statevector")
+        
+        bell_circuit.save_statevector()
         compiled = transpile(bell_circuit, backend)
         result = backend.run(compiled).result()
 
@@ -173,9 +185,24 @@ def compute_bell_magic_from_circuit(circuit, depolarization_factor=0.0, n_sample
             probs = ((1 - p_global) * probs + p_global / (4 ** n_qubits))
 
     else:
+        # SAMPLING MODE: Append measurements and apply Qiskit NoiseModel
+        bell_circuit = bell_magic_circuit_from_state(state_circuit, add_measurement=True)
         backend = Aer.get_backend("aer_simulator")
         compiled = transpile(bell_circuit, backend)
-        result = backend.run(compiled, shots=n_samples).result()
+
+        if depolarization_factor > 0:
+            # FIXED: Build and inject physical depolarizing channel
+            noise_model = NoiseModel()
+            error_1 = depolarizing_error(depolarization_factor, 1)
+            error_2 = depolarizing_error(depolarization_factor, 2)
+            
+            # Apply to common 1-qubit and 2-qubit gates
+            noise_model.add_all_qubit_quantum_error(error_1, ['u1', 'u2', 'u3', 'rx', 'ry', 'rz', 'h', 't', 's', 'x', 'y', 'z'])
+            noise_model.add_all_qubit_quantum_error(error_2, ['cx', 'cz', 'swap', 'ccx'])
+            
+            result = backend.run(compiled, shots=n_samples, noise_model=noise_model).result()
+        else:
+            result = backend.run(compiled, shots=n_samples).result()
 
         counts = result.get_counts()
         bitstrings = []
