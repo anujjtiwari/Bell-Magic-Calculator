@@ -230,13 +230,13 @@ with main_col1:
     code_input = st.text_area("Python Qiskit Code", value=default_code, height=350, label_visibility="collapsed")
     st.write("")
     
-    run_simulation = st.button("🚀 EXECUTE MAGIC PROTOCOL", type="primary")
+    run_simulation = st.button("EXECUTE MAGIC PROTOCOL", type="primary")
 
     if run_simulation:
         circuit, error = extract_circuit_from_python(code_input)
         
         if not error and circuit.num_qubits <= 10:
-            st.markdown("### 🧩 // TOPOLOGY_RENDER")
+            st.markdown("### Circuit visualizer:")
             
             # Print ASCII text-based diagram in a monospace block
             st.markdown("```text\n" + str(circuit.draw(output="text")) + "\n```")
@@ -264,7 +264,7 @@ with main_col1:
                 st.warning(f"Could not generate graphical drawing. Error: {e}")
 
 with main_col2:
-    st.markdown("### 📊 // TELEMETRY")
+    st.markdown("### Telemetry Output:")
     if run_simulation:
         with st.status("INITIALIZING QUANTUM ENGINE...", expanded=True) as status:
             if error:
