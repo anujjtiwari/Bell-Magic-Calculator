@@ -180,6 +180,19 @@ with st.sidebar:
         value=0,
         format_func=lambda x: "Exact Statevector" if x == 0 else f"{x} Shots"
     )
+if depolarization_factor > 0:
+            # FIXED: Build and inject physical depolarizing channel correctly
+            noise_model = NoiseModel()
+            error_1 = depolarizing_error(depolarization_factor, 1)
+            error_2 = depolarizing_error(depolarization_factor, 2)
+            error_3 = depolarizing_error(depolarization_factor, 3) # Added 3-qubit error
+            
+            # Apply to common 1-qubit, 2-qubit, and 3-qubit gates separately
+            noise_model.add_all_qubit_quantum_error(error_1, ['u1', 'u2', 'u3', 'rx', 'ry', 'rz', 'h', 't', 's', 'x', 'y', 'z'])
+            noise_model.add_all_qubit_quantum_error(error_2, ['cx', 'cz', 'swap']) # Removed ccx from here
+            noise_model.add_all_qubit_quantum_error(error_3, ['ccx']) # Applied 3-qubit error to ccx here
+            
+            result = backend.run(compiled, shots=n_samples, noise_model=noise_model).result()
 
 # --- Main Layout ---
 col_header_1, col_header_2 = st.columns([2, 1])

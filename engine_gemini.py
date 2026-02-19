@@ -3,7 +3,7 @@ import qiskit as qk
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
 from qiskit.circuit import Measure, Reset
 from qiskit_aer import Aer
-from qiskit_aer.noise import NoiseModel, depolarizing_error  # ADDED: For realistic circuit noise
+from qiskit_aer.noise import NoiseModel, depolarizing_error  # For realistic circuit noise
 
 # ---- Helper Functions ----
 
@@ -129,7 +129,6 @@ def strip_measurements(circuit):
 
     return new_circuit
 
-# FIXED: Added 'add_measurement' flag so Exact Mode doesn't collapse the statevector
 def bell_magic_circuit_from_state(state_circuit, add_measurement=True):
     n = state_circuit.num_qubits
     q = QuantumRegister(2 * n, 'q')
@@ -191,14 +190,16 @@ def compute_bell_magic_from_circuit(circuit, depolarization_factor=0.0, n_sample
         compiled = transpile(bell_circuit, backend)
 
         if depolarization_factor > 0:
-            # FIXED: Build and inject physical depolarizing channel
+            # Build and inject physical depolarizing channel correctly
             noise_model = NoiseModel()
             error_1 = depolarizing_error(depolarization_factor, 1)
             error_2 = depolarizing_error(depolarization_factor, 2)
+            error_3 = depolarizing_error(depolarization_factor, 3) # Added 3-qubit error
             
-            # Apply to common 1-qubit and 2-qubit gates
+            # Apply to common 1-qubit, 2-qubit, and 3-qubit gates separately
             noise_model.add_all_qubit_quantum_error(error_1, ['u1', 'u2', 'u3', 'rx', 'ry', 'rz', 'h', 't', 's', 'x', 'y', 'z'])
-            noise_model.add_all_qubit_quantum_error(error_2, ['cx', 'cz', 'swap', 'ccx'])
+            noise_model.add_all_qubit_quantum_error(error_2, ['cx', 'cz', 'swap'])
+            noise_model.add_all_qubit_quantum_error(error_3, ['ccx'])
             
             result = backend.run(compiled, shots=n_samples, noise_model=noise_model).result()
         else:
