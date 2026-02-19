@@ -1,6 +1,7 @@
 import streamlit as st
 import qiskit
 import numpy as np
+import matplotlib.pyplot as plt  # Re-added for the graphical circuit drawing
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from engine_gemini import compute_bell_magic_from_circuit  # Importing your clean backend
 
@@ -167,20 +168,38 @@ circuit.measure(qreg_q[0], creg_c[0])
 circuit.measure(qreg_q[1], creg_c[1])
 """
 
+circuit, error = None, None
+
 with main_col1:
     st.markdown("### 💻 Input Circuit")
     code_input = st.text_area("Python Qiskit Code", value=default_code, height=350, label_visibility="collapsed")
     st.write("")
-    if st.button("🚀 Calculate Magic Resources", type="primary"):
-        run_simulation = True
-    else:
-        run_simulation = False
+    
+    run_simulation = st.button("🚀 Calculate Magic Resources", type="primary")
+
+    # Display the circuit visualization here so it has room to breathe
+    if run_simulation:
+        circuit, error = extract_circuit_from_python(code_input)
+        
+        if not error and circuit.num_qubits <= 10:
+            st.markdown("### 🧩 Circuit Visualization")
+            
+            # Print ASCII text-based diagram
+            st.text(circuit.draw(output="text"))
+            
+            # Print Matplotlib graphical diagram
+            try:
+                st.markdown("**Graphical Diagram:**")
+                fig = circuit.draw(output="mpl", fold=-1)
+                st.pyplot(fig)
+                plt.close(fig)
+            except Exception as e:
+                st.warning(f"Could not generate graphical drawing. Error: {e}")
 
 with main_col2:
     st.markdown("### 📊 Analysis Dashboard")
     if run_simulation:
         with st.status("Processing Quantum Circuit...", expanded=True) as status:
-            circuit, error = extract_circuit_from_python(code_input)
             if error:
                 status.update(label="Error detected", state="error")
                 st.error(f"❌ {error}")
