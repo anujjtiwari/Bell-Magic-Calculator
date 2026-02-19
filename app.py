@@ -4,14 +4,33 @@ import numpy as np
 import matplotlib.pyplot as plt
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister
 from engine_gemini import compute_bell_magic_from_circuit  # Importing your clean backend
+from PIL import image 
 
 # --- Page Config ---
+from PIL import Image
+
+# Load your custom icon
+icon = Image.open("assets/cropped_logo.png")
+
 st.set_page_config(
     page_title="Bell Magic Calculator",
-    page_icon="⚛️",
+    page_icon=icon,
     layout="wide",
     initial_sidebar_state="expanded"
 )
+# --- Sidebar ---
+with st.sidebar:
+    # This adds the logo at the top of the sidebar
+    st.image("assets/logo.png", use_container_width=True) 
+    
+    st.markdown("### ⚙️ SYSTEM SETTINGS")
+    # ... rest of your code
+# st.set_page_config(
+#     page_title="Bell Magic Calculator",
+#     page_icon="⚛️",
+#     layout="wide",
+#     initial_sidebar_state="expanded"
+# )
 
 # --- Custom CSS for Cyber/Futuristic UI ---
 st.markdown("""
