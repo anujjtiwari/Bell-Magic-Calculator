@@ -283,7 +283,7 @@ st.write("---")
 st.markdown("""
 <div class="citation-box">
     <div class="citation-content">
-        <h4>DATA_SOURCE // ARCHIVE</h4>
+        <h4>An inspired work from</h4>
         <p>"Scalable Measures of Magic Resource for Quantum Computers" — Tobias Haug & M.S. Kim</p>
     </div>
     <a href="https://github.com/txhaug/bell-magic" target="_blank" class="github-link">
